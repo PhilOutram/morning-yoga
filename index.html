@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morning Stretch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Header ── -->
+  <header>
+    <svg class="logo-mark" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="17" stroke="#C8894A" stroke-width="1.5" stroke-opacity=".4"/>
+      <ellipse cx="18" cy="12" rx="4" ry="4" fill="#C8894A" fill-opacity=".7"/>
+      <path d="M10 28 Q14 20 18 20 Q22 20 26 28" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M13 22 Q11 25 9 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M23 22 Q25 25 27 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <h1>Morning Stretch</h1>
+    <p>5 minutes · 7 stretches</p>
+  </header>
+
+  <!-- ── Session progress ── -->
+  <div class="session-bar">
+    <div class="session-bar-track">
+      <div class="session-bar-fill" id="sessionBar"></div>
+    </div>
+    <div class="session-label">
+      <span id="sessionLabel">Ready to begin</span>
+      <span id="sessionTime">5:00</span>
+    </div>
+  </div>
+
+  <!-- ── Main card ── -->
+  <div class="card">
+
+    <!-- Intro screen -->
+    <div class="screen visible" id="introScreen">
+      <svg class="screen-icon" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="39" stroke="#C8894A" stroke-width="1" stroke-opacity=".3"/>
+        <circle cx="40" cy="40" r="32" fill="#C8894A" fill-opacity=".06"/>
+        <line x1="40" y1="14" x2="40" y2="20" stroke="#C8894A" stroke-width="2" stroke-linecap="round" stroke-opacity=".6"/>
+        <line x1="40" y1="60" x2="40" y2="66" stroke="#C8894A" stroke-width="2" stroke-linecap="round" stroke-opacity=".6"/>
+        <line x1="14" y1="40" x2="20" y2="40" stroke="#C8894A" stroke-width="2" stroke-linecap="round" stroke-opacity=".6"/>
+        <line x1="60" y1="40" x2="66" y2="40" stroke="#C8894A" stroke-width="2" stroke-linecap="round" stroke-opacity=".6"/>
+        <circle cx="40" cy="29" r="4.5" fill="#C8894A" fill-opacity=".6"/>
+        <path d="M40 33 L40 50" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 38 L33 34" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 38 L47 34" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 50 L35 58" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 50 L45 58" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h2>Good morning</h2>
+      <p>A gentle 5-minute routine to loosen your back and legs before your day begins.</p>
+      <p class="total-time">Find a mat or soft floor space · bare feet preferred</p>
+      <button class="btn btn-main" onclick="startSession()" style="margin-top:8px">Begin session</button>
+    </div>
+
+    <!-- Active stretch area -->
+    <div class="active-area" id="activeArea">
+
+      <button class="voice-toggle" id="voiceToggle" onclick="toggleVoice()" title="Toggle voice">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" id="speakerWave"/>
+          <line x1="23" y1="9" x2="17" y2="15" id="muteX1" style="display:none"/>
+          <line x1="17" y1="9" x2="23" y2="15" id="muteX2" style="display:none"/>
+        </svg>
+      </button>
+
+      <div class="stretch-count" id="stretchCount">Stretch 1 of 7</div>
+
+      <!-- Pose illustration (SVG loaded dynamically) -->
+      <div class="pose-illustration" id="poseIllustration"></div>
+
+      <!-- Timer ring -->
+      <div class="timer-wrap">
+        <svg class="timer-svg" viewBox="0 0 120 120">
+          <circle class="timer-track" cx="60" cy="60" r="52"/>
+          <circle class="timer-fill" id="timerRing" cx="60" cy="60" r="52"/>
+        </svg>
+        <div class="timer-text">
+          <span class="timer-seconds" id="timerDisplay">30</span>
+          <span class="timer-label">seconds</span>
+        </div>
+      </div>
+
+      <div id="sideIndicator" class="side-indicator" style="display:none"></div>
+      <div class="stretch-name" id="stretchName"></div>
+      <div class="stretch-tip" id="stretchTip"></div>
+
+      <div class="controls">
+        <button class="btn btn-icon" onclick="prevStretch()" title="Previous stretch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="btn btn-main" id="pauseBtn" onclick="togglePause()">Pause</button>
+        <button class="btn btn-icon" onclick="skipStretch()" title="Skip stretch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+
+    </div><!-- /activeArea -->
+
+    <!-- Complete screen -->
+    <div class="screen" id="completeScreen">
+      <svg class="screen-icon" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="39" stroke="#5A6B4E" stroke-width="1" stroke-opacity=".4"/>
+        <circle cx="40" cy="40" r="32" fill="#5A6B4E" fill-opacity=".06"/>
+        <path d="M24 40 L35 51 L56 28" stroke="#5A6B4E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>Well done</h2>
+      <p>Your back and legs are warmed up and ready. Have a wonderful day.</p>
+      <p class="total-time">5 minutes complete</p>
+      <button class="btn btn-main" onclick="resetSession()" style="margin-top:8px">Stretch again</button>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- ── Stretch queue ── -->
+  <div class="queue" id="stretchQueue"></div>
+
+  <!-- ── Version footer ── -->
+  <div class="version-footer">
+    <span id="versionLabel"></span>
+  </div>
+
+</div><!-- /app -->
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
