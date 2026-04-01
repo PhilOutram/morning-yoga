@@ -178,7 +178,7 @@ function getPoseUrl(stretch, si) {
 }
 
 function loadPose(url) {
-  els.poseIllustration.innerHTML = '<div class="pose-loading"></div>';
+  // Pre-load into an off-screen image, then swap in — container never changes height
   const img = new Image();
   img.alt = 'stretch pose';
   img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
@@ -190,12 +190,14 @@ function loadPose(url) {
     els.poseIllustration.classList.add('animate-in');
   };
   img.onerror = () => {
-    // Placeholder if image not yet added to poses/ folder
+    // Placeholder if image not yet in poses/ — keeps same fixed height
     els.poseIllustration.innerHTML =
       `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-        height:100%;gap:8px;color:#9A8A7A;font-size:12px;font-family:'Lora',serif;font-style:italic;opacity:0.6">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        width:100%;height:100%;gap:8px;color:#9A8A7A;font-size:12px;
+        font-family:Lora,serif;font-style:italic;opacity:0.5">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
           <polyline points="21 15 16 10 5 21"/>
         </svg>
         add image to poses/
@@ -215,10 +217,11 @@ function showStretch(i, si, doAnnounce) {
 
   // Side indicator
   if (s.sides) {
-    els.sideIndicator.style.display = 'inline-block';
     els.sideIndicator.textContent = s.sides[si];
+    els.sideIndicator.classList.add('visible');
   } else {
-    els.sideIndicator.style.display = 'none';
+    els.sideIndicator.textContent = '';
+    els.sideIndicator.classList.remove('visible');
   }
 
   // Animate text in
@@ -308,7 +311,10 @@ function startSession() {
 function togglePause() {
   isPaused = !isPaused;
   els.pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-  if (!isPaused && pendingAnnounce) {
+  if (isPaused) {
+    // Stop any speech and audio immediately on pause
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  } else if (pendingAnnounce) {
     speak(pendingAnnounce);
     pendingAnnounce = null;
   }
@@ -372,6 +378,24 @@ function resetSession() {
   startTicker();
 }
 
+
+// resetToStart: goes back to intro screen from any state
+function resetToStart() {
+  clearInterval(ticker);
+  ticker = null; stretchIdx = 0; sideIdx = 0;
+  timeLeft = 0; elapsed = 0; isPaused = false; pendingAnnounce = null;
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  els.sessionBar.style.width = "0%";
+  els.sessionLabel.textContent = "Ready to begin";
+  els.sessionTime.textContent = Math.floor(TOTAL_DURATION/60) + ":" + String(TOTAL_DURATION%60).padStart(2,"0");
+  els.pauseBtn.textContent = "Pause";
+  setRing(1);
+  els.activeArea.classList.remove("visible");
+  els.completeScreen.classList.remove("visible");
+  els.introScreen.classList.add("visible");
+  els.queue.innerHTML = "";
+}
+
 function toggleVoice() {
   voiceEnabled = !voiceEnabled;
   els.voiceToggle.classList.toggle('muted', !voiceEnabled);
@@ -380,6 +404,19 @@ function toggleVoice() {
   els.muteX2.style.display      = voiceEnabled ? 'none' : '';
   if (!voiceEnabled) window.speechSynthesis.cancel();
 }
+
+
+/* -- Help modal ─────────────────────────────────────────────── */
+function toggleHelp() {
+  document.getElementById('helpOverlay').classList.toggle('visible');
+}
+function closeHelp() {
+  document.getElementById('helpOverlay').classList.remove('visible');
+}
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHelp();
+});
 
 /* ── Version label ───────────────────────────────────────────── */
 function initVersion() {

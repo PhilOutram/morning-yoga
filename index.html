@@ -10,20 +10,35 @@
 <body>
 <div class="app">
 
-  <!-- ── Header ── -->
+  <!-- Header: logo + title inline, reset button on right -->
   <header>
-    <svg class="logo-mark" viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="18" r="17" stroke="#C8894A" stroke-width="1.5" stroke-opacity=".4"/>
-      <ellipse cx="18" cy="12" rx="4" ry="4" fill="#C8894A" fill-opacity=".7"/>
-      <path d="M10 28 Q14 20 18 20 Q22 20 26 28" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-      <path d="M13 22 Q11 25 9 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M23 22 Q25 25 27 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <h1>Morning Stretch</h1>
-    <p>5 minutes · 7 stretches</p>
+    <div class="header-inner">
+      <svg class="logo-mark" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="17" stroke="#C8894A" stroke-width="1.5" stroke-opacity=".4"/>
+        <ellipse cx="18" cy="12" rx="4" ry="4" fill="#C8894A" fill-opacity=".7"/>
+        <path d="M10 28 Q14 20 18 20 Q22 20 26 28" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M13 22 Q11 25 9 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M23 22 Q25 25 27 26" stroke="#6B5B4E" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="header-text">
+        <h1>Morning Stretch</h1>
+        <p>5 minutes &middot; 7 stretches</p>
+      </div>
+      <div class="header-btns">
+        <button class="btn-reset" id="helpBtn" onclick="toggleHelp()" title="How it works">
+          <span style="font-size:14px;font-weight:500;font-family:'Lora',serif;color:inherit">?</span>
+        </button>
+        <button class="btn-reset" id="resetBtn" onclick="resetToStart()" title="Reset to beginning">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
   </header>
 
-  <!-- ── Session progress ── -->
+  <!-- Session progress bar -->
   <div class="session-bar">
     <div class="session-bar-track">
       <div class="session-bar-fill" id="sessionBar"></div>
@@ -34,7 +49,7 @@
     </div>
   </div>
 
-  <!-- ── Main card ── -->
+  <!-- Main card -->
   <div class="card">
 
     <!-- Intro screen -->
@@ -55,7 +70,7 @@
       </svg>
       <h2>Good morning</h2>
       <p>A gentle 5-minute routine to loosen your back and legs before your day begins.</p>
-      <p class="total-time">Find a mat or soft floor space · bare feet preferred</p>
+      <p class="total-time">Find a mat or soft floor space &middot; bare feet preferred</p>
       <button class="btn btn-main" onclick="startSession()" style="margin-top:8px">Begin session</button>
     </div>
 
@@ -73,10 +88,8 @@
 
       <div class="stretch-count" id="stretchCount">Stretch 1 of 7</div>
 
-      <!-- Pose illustration (SVG loaded dynamically) -->
       <div class="pose-illustration" id="poseIllustration"></div>
 
-      <!-- Timer ring -->
       <div class="timer-wrap">
         <svg class="timer-svg" viewBox="0 0 120 120">
           <circle class="timer-track" cx="60" cy="60" r="52"/>
@@ -88,7 +101,7 @@
         </div>
       </div>
 
-      <div id="sideIndicator" class="side-indicator" style="display:none"></div>
+      <div id="sideIndicator" class="side-indicator"></div>
       <div class="stretch-name" id="stretchName"></div>
       <div class="stretch-tip" id="stretchTip"></div>
 
@@ -106,7 +119,7 @@
         </button>
       </div>
 
-    </div><!-- /activeArea -->
+    </div>
 
     <!-- Complete screen -->
     <div class="screen" id="completeScreen">
@@ -121,17 +134,62 @@
       <button class="btn btn-main" onclick="resetSession()" style="margin-top:8px">Stretch again</button>
     </div>
 
-  </div><!-- /card -->
+  </div>
 
-  <!-- ── Stretch queue ── -->
+  <!-- Stretch queue -->
   <div class="queue" id="stretchQueue"></div>
 
-  <!-- ── Version footer ── -->
+  <!-- Version footer -->
   <div class="version-footer">
     <span id="versionLabel"></span>
   </div>
 
-</div><!-- /app -->
+  <!-- Help modal overlay -->
+  <div class="help-overlay" id="helpOverlay" onclick="closeHelp()">
+    <div class="help-modal" onclick="event.stopPropagation()">
+      <div class="help-header">
+        <h2>How it works</h2>
+        <button class="help-close" onclick="closeHelp()" title="Close">&times;</button>
+      </div>
+      <div class="help-body">
+        <p>A gentle 5-minute morning routine targeting the lower back and legs — the areas most likely to feel stiff after sleep.</p>
+
+        <h3>During a stretch</h3>
+        <ul>
+          <li>A countdown timer shows how long to hold each pose</li>
+          <li>Three soft pips warn you in the last 3 seconds</li>
+          <li>Each new stretch is announced aloud — tap the speaker icon to mute</li>
+          <li>Use the arrows to skip forward or go back</li>
+          <li>Tap <strong>Pause</strong> to freeze the timer at any time</li>
+        </ul>
+
+        <h3>The routine</h3>
+        <table class="help-table">
+          <thead><tr><th>Stretch</th><th>Time</th></tr></thead>
+          <tbody>
+            <tr><td>Knees to Chest</td><td>30s</td></tr>
+            <tr><td>Spinal Twist</td><td>30s each side</td></tr>
+            <tr><td>Cat-Cow</td><td>45s</td></tr>
+            <tr><td>Child's Pose</td><td>45s</td></tr>
+            <tr><td>Low Lunge</td><td>30s each side</td></tr>
+            <tr><td>Seated Forward Fold</td><td>45s</td></tr>
+            <tr><td>Standing Forward Fold</td><td>30s</td></tr>
+          </tbody>
+          <tfoot><tr><td><strong>Total</strong></td><td><strong>5 min</strong></td></tr></tfoot>
+        </table>
+
+        <h3>Tips</h3>
+        <ul>
+          <li>Move slowly and breathe deeply throughout</li>
+          <li>Never force a stretch — gentle discomfort is fine, pain is not</li>
+          <li>For the forward folds, bend your knees as much as you need to</li>
+          <li>Add the pose images into the <code>poses/</code> folder to see illustrations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <script src="config.js"></script>
 <script src="app.js"></script>
