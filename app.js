@@ -5,6 +5,7 @@
 /* ── Stretch data ──────────────────────────────────────────── */
 const STRETCHES = [
   {
+    id: "knees-to-chest",
     name: "Knees to Chest",
     duration: 30,
     tip: "Breathe out slowly as you pull your knees closer",
@@ -13,6 +14,7 @@ const STRETCHES = [
     pose: "poses/knees-to-chest.png"
   },
   {
+    id: "spinal-twist",
     name: "Spinal Twist",
     duration: 30,
     tip: "Keep both shoulders pressed gently toward the floor",
@@ -21,6 +23,7 @@ const STRETCHES = [
     poses: ["poses/spinal-twist-left.png", "poses/spinal-twist-right.png"]
   },
   {
+    id: "cat-cow",
     name: "Cat-Cow",
     duration: 45,
     tip: "Arch on the inhale, round on the exhale — move with your breath",
@@ -29,6 +32,7 @@ const STRETCHES = [
     pose: "poses/cat-cow.png"
   },
   {
+    id: "childs-pose",
     name: "Child's Pose",
     duration: 45,
     tip: "Walk your hands forward for more length, breathe into your lower back",
@@ -37,6 +41,7 @@ const STRETCHES = [
     pose: "poses/childs-pose.png"
   },
   {
+    id: "low-lunge",
     name: "Low Lunge",
     duration: 30,
     tip: "Sink your hips gently forward and down, front knee over ankle",
@@ -45,6 +50,7 @@ const STRETCHES = [
     poses: ["poses/low-lunge-left.png", "poses/low-lunge-right.png"]
   },
   {
+    id: "seated-fold",
     name: "Seated Forward Fold",
     duration: 45,
     tip: "Bend your knees slightly if needed — reach for your shins, not your ego",
@@ -53,6 +59,7 @@ const STRETCHES = [
     pose: "poses/seated-fold.png"
   },
   {
+    id: "standing-fold",
     name: "Standing Forward Fold",
     duration: 30,
     tip: "Bend your knees generously, let your head hang heavy, sway gently",
@@ -62,9 +69,54 @@ const STRETCHES = [
   }
 ];
 
-const TOTAL_DURATION = STRETCHES.reduce(
-  (s, x) => s + (x.sides ? x.duration * 2 : x.duration), 0
-);
+/* ── Session selection ─────────────────────────────────────── */
+// STRETCHES is the full catalog; the user picks which ones make up their
+// routine. The active subset (in catalog order) is SESSION, and the whole
+// engine runs off SESSION rather than STRETCHES directly.
+const STORAGE_KEY = 'morningStretch.enabledStretches';
+
+function computeTotal(list) {
+  return list.reduce((s, x) => s + (x.sides ? x.duration * 2 : x.duration), 0);
+}
+function fmtTime(sec) {
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+}
+
+function loadSelection() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const ids = JSON.parse(raw).filter(id => STRETCHES.some(s => s.id === id));
+      if (ids.length) return new Set(ids);
+    }
+  } catch (e) {}
+  return new Set(STRETCHES.map(s => s.id));   // default: everything enabled
+}
+function saveSelection() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedIds])); } catch (e) {}
+}
+function activeList() {
+  return STRETCHES.filter(s => selectedIds.has(s.id));   // preserves catalog order
+}
+
+let selectedIds  = loadSelection();
+let SESSION      = activeList();
+let sessionTotal = computeTotal(SESSION);
+
+// Recompute SESSION from the current selection. Called whenever a session
+// (re)starts; it never mutates a session that is already running.
+function rebuildSession() {
+  SESSION = activeList();
+  if (!SESSION.length) {                       // never run an empty routine
+    selectedIds = new Set(STRETCHES.map(s => s.id));
+    SESSION = activeList();
+  }
+  sessionTotal = computeTotal(SESSION);
+}
+function routineLabel() {
+  const n = SESSION.length;
+  return `${n} stretch${n === 1 ? '' : 'es'} · ${fmtTime(sessionTotal)}`;
+}
 
 /* ── State ─────────────────────────────────────────────────── */
 let stretchIdx  = 0;
@@ -99,6 +151,9 @@ const els = {
   muteX2:         $('muteX2'),
   queue:          $('stretchQueue'),
   versionLabel:   $('versionLabel'),
+  headerSub:       $('headerSub'),
+  settingsList:    $('settingsList'),
+  settingsSummary: $('settingsSummary'),
 };
 
 /* ── Timer ring ─────────────────────────────────────────────── */
@@ -179,7 +234,7 @@ document.addEventListener('visibilitychange', () => {
 
 /* ── Queue ───────────────────────────────────────────────────── */
 function buildQueue() {
-  els.queue.innerHTML = STRETCHES.map((s, i) => `
+  els.queue.innerHTML = SESSION.map((s, i) => `
     <div class="queue-item upcoming" id="qi-${i}">
       <div class="queue-dot"></div>
       <div class="queue-name">${s.name.split(' ')[0]}</div>
@@ -187,7 +242,7 @@ function buildQueue() {
 }
 
 function updateQueue() {
-  STRETCHES.forEach((_, i) => {
+  SESSION.forEach((_, i) => {
     const el = $(`qi-${i}`);
     if (el) el.className = 'queue-item ' +
       (i < stretchIdx ? 'done' : i === stretchIdx ? 'active' : 'upcoming');
@@ -234,10 +289,10 @@ function loadPose(url) {
 
 /* ── Show stretch ────────────────────────────────────────────── */
 function showStretch(i, si, doAnnounce) {
-  const s = STRETCHES[i];
+  const s = SESSION[i];
   timeLeft = s.duration;
 
-  els.stretchCount.textContent = `Stretch ${i + 1} of ${STRETCHES.length}`;
+  els.stretchCount.textContent = `Stretch ${i + 1} of ${SESSION.length}`;
   els.timerDisplay.textContent = s.duration;
   setRing(1);
 
@@ -280,7 +335,7 @@ function showStretch(i, si, doAnnounce) {
 /* ── Ticker ──────────────────────────────────────────────────── */
 function startTicker() {
   clearInterval(ticker);
-  const total = STRETCHES[stretchIdx].duration;
+  const total = SESSION[stretchIdx].duration;
 
   ticker = setInterval(() => {
     if (isPaused) return;
@@ -292,11 +347,9 @@ function startTicker() {
     setRing(timeLeft / total);
 
     // Session bar + time remaining
-    const rem = Math.max(0, TOTAL_DURATION - elapsed);
-    const m = Math.floor(rem / 60);
-    const s = rem % 60;
-    els.sessionTime.textContent = `${m}:${String(s).padStart(2, '0')}`;
-    els.sessionBar.style.width = Math.min(100, (elapsed / TOTAL_DURATION) * 100) + '%';
+    const rem = Math.max(0, sessionTotal - elapsed);
+    els.sessionTime.textContent = fmtTime(rem);
+    els.sessionBar.style.width = Math.min(100, (elapsed / sessionTotal) * 100) + '%';
 
     // Countdown pips (low, low, high)
     if (timeLeft === 3) pip(600, 0.15);
@@ -309,14 +362,14 @@ function startTicker() {
 
 /* ── Advance ─────────────────────────────────────────────────── */
 function advance() {
-  const s = STRETCHES[stretchIdx];
+  const s = SESSION[stretchIdx];
   if (s.sides && sideIdx === 0) {
     sideIdx = 1;
     showStretch(stretchIdx, 1, true);
   } else {
     sideIdx = 0;
     stretchIdx++;
-    if (stretchIdx >= STRETCHES.length) {
+    if (stretchIdx >= SESSION.length) {
       finishSession();
       return;
     }
@@ -326,6 +379,7 @@ function advance() {
 
 /* ── Session controls ────────────────────────────────────────── */
 function startSession() {
+  rebuildSession();
   els.introScreen.classList.remove('visible');
   els.activeArea.classList.add('visible');
   els.sessionLabel.textContent = 'In progress';
@@ -351,7 +405,7 @@ function skipStretch() {
   clearInterval(ticker);
   elapsed += timeLeft;
   advance();
-  if (stretchIdx < STRETCHES.length) startTicker();
+  if (stretchIdx < SESSION.length) startTicker();
 }
 
 function prevStretch() {
@@ -387,13 +441,14 @@ function resetSession() {
   elapsed     = 0;
   isPaused    = false;
   pendingAnnounce = null;
+  rebuildSession();
 
   // Reset UI
   els.pauseBtn.textContent = 'Pause';
   els.sessionBar.style.width = '0%';
   els.sessionLabel.textContent = 'In progress';
-  els.sessionTime.textContent = `${Math.floor(TOTAL_DURATION/60)}:${String(TOTAL_DURATION%60).padStart(2,'0')}`;
-  els.timerDisplay.textContent = STRETCHES[0].duration;
+  els.sessionTime.textContent = fmtTime(sessionTotal);
+  els.timerDisplay.textContent = SESSION[0].duration;
   setRing(1);
 
   // Switch screens
@@ -414,9 +469,11 @@ function resetToStart() {
   ticker = null; stretchIdx = 0; sideIdx = 0;
   timeLeft = 0; elapsed = 0; isPaused = false; pendingAnnounce = null;
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  rebuildSession();
   els.sessionBar.style.width = "0%";
   els.sessionLabel.textContent = "Ready to begin";
-  els.sessionTime.textContent = Math.floor(TOTAL_DURATION/60) + ":" + String(TOTAL_DURATION%60).padStart(2,"0");
+  els.sessionTime.textContent = fmtTime(sessionTotal);
+  els.headerSub.textContent = routineLabel();
   els.pauseBtn.textContent = "Pause";
   setRing(1);
   els.activeArea.classList.remove("visible");
@@ -445,8 +502,65 @@ function closeHelp() {
 }
 // Close on Escape key
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeHelp();
+  if (e.key === 'Escape') { closeHelp(); closeSettings(); }
 });
+
+/* ── Settings modal (choose stretches) ───────────────────────── */
+function toggleSettings() {
+  renderSettings();
+  document.getElementById('settingsOverlay').classList.toggle('visible');
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('visible');
+}
+
+function renderSettings() {
+  els.settingsList.innerHTML = STRETCHES.map(s => {
+    const dur = s.sides ? `${s.duration}s each side` : `${s.duration}s`;
+    const checked = selectedIds.has(s.id) ? 'checked' : '';
+    return `
+      <label class="setting-row">
+        <span class="setting-info">
+          <span class="setting-name">${s.name}</span>
+          <span class="setting-meta">${dur}</span>
+        </span>
+        <input type="checkbox" class="setting-check"
+               ${checked} onchange="onToggleStretch('${s.id}', this)">
+      </label>`;
+  }).join('');
+  renderSettingsSummary();
+}
+
+function renderSettingsSummary() {
+  const list = activeList();
+  els.settingsSummary.textContent =
+    `${list.length} of ${STRETCHES.length} selected · ${fmtTime(computeTotal(list))}`;
+}
+
+function onToggleStretch(id, input) {
+  if (input.checked) {
+    selectedIds.add(id);
+  } else if (selectedIds.size <= 1) {
+    input.checked = true;          // keep at least one stretch selected
+    return;
+  } else {
+    selectedIds.delete(id);
+  }
+  applySelectionChange();
+}
+
+// Persist the choice and refresh the idle UI. A session already in progress
+// keeps its own list; the new selection takes effect the next time you begin.
+function applySelectionChange() {
+  saveSelection();
+  renderSettingsSummary();
+  if (els.activeArea.classList.contains('visible')) return;
+  rebuildSession();
+  els.headerSub.textContent = routineLabel();
+  if (els.introScreen.classList.contains('visible')) {
+    els.sessionTime.textContent = fmtTime(sessionTotal);
+  }
+}
 
 /* ── Version label ───────────────────────────────────────────── */
 function initVersion() {
@@ -458,4 +572,6 @@ function initVersion() {
 /* ── Init ────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   initVersion();
+  els.headerSub.textContent = routineLabel();
+  els.sessionTime.textContent = fmtTime(sessionTotal);
 });

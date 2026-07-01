@@ -38,14 +38,23 @@ convention (also stated in `AGENTS.md`).
 The whole app is procedural module-scope code in [app.js](app.js) driving the DOM in
 `index.html`. Key pieces:
 
-- **`STRETCHES` array** — the single source of truth for the routine. Each entry has
-  `name`, `duration` (seconds), `tip`, `announce` (spoken text), and either `pose` (one
-  image path) or, for two-sided stretches, `sides: [...]` plus a `poses: [...]` array.
-  `TOTAL_DURATION` is derived from it (sided stretches count their duration twice).
-  Changing the routine = editing this array; the queue, totals, and timing all follow.
+- **`STRETCHES` catalog vs `SESSION`** — `STRETCHES` is the full, immutable catalog; each
+  entry has a stable `id`, `name`, `duration` (seconds), `tip`, `announce` (spoken text),
+  and either `pose` (one image path) or, for two-sided stretches, `sides: [...]` plus a
+  `poses: [...]` array. The user chooses which stretches to include (settings cog), and the
+  engine actually runs off **`SESSION`** — the enabled subset in catalog order, rebuilt via
+  `rebuildSession()` at each session (re)start. `sessionTotal` (dynamic, sided stretches
+  counted twice) drives the session bar and clock. Adding a stretch = append to `STRETCHES`;
+  the queue, totals, and settings list all follow.
 
-- **State machine** — module-level `stretchIdx` (which stretch) and `sideIdx` (0 or 1 for
-  sided stretches) are the position; `timeLeft`, `elapsed`, `isPaused`, `voiceEnabled`,
+- **Selection & persistence** — `selectedIds` (a `Set` of stretch ids) is the user's choice,
+  persisted to `localStorage` under `STORAGE_KEY`. `loadSelection()` defaults to all ids and
+  drops unknown ones; `activeList()` derives `SESSION`. The settings panel keeps at least one
+  stretch enabled, and changes only take effect on the next session start (they never mutate a
+  running `SESSION`).
+
+- **State machine** — module-level `stretchIdx` (index into `SESSION`) and `sideIdx` (0 or 1
+  for sided stretches) are the position; `timeLeft`, `elapsed`, `isPaused`, `voiceEnabled`,
   and `pendingAnnounce` round out the state. `advance()` is the core transition: for a
   sided stretch it runs side 0 then side 1 before incrementing `stretchIdx`; past the last
   stretch it calls `finishSession()`.

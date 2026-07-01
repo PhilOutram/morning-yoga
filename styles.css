@@ -542,3 +542,51 @@ header p {
 .help-table tfoot td:last-child {
   color: var(--amber);
 }
+
+/* -- Settings: stretch chooser -- */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 4px;
+  border-bottom: 1px solid rgba(107,91,78,.08);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.setting-name {
+  font-size: 13.5px;
+  color: var(--text-dark);
+}
+.setting-meta {
+  font-size: 11px;
+  color: var(--text-light);
+  letter-spacing: .03em;
+}
+.setting-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+.settings-summary {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(107,91,78,.12);
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+  letter-spacing: .03em;
+}

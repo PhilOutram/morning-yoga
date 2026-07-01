@@ -22,9 +22,15 @@
       </svg>
       <div class="header-text">
         <h1>Morning Stretch</h1>
-        <p>5 minutes &middot; 7 stretches</p>
+        <p id="headerSub">5 minutes &middot; 7 stretches</p>
       </div>
       <div class="header-btns">
+        <button class="btn-reset" id="settingsBtn" onclick="toggleSettings()" title="Choose stretches">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
         <button class="btn-reset" id="helpBtn" onclick="toggleHelp()" title="How it works">
           <span style="font-size:14px;font-weight:500;font-family:'Lora',serif;color:inherit">?</span>
         </button>
@@ -185,6 +191,21 @@
           <li>For the forward folds, bend your knees as much as you need to</li>
           <li>Add the pose images into the <code>poses/</code> folder to see illustrations</li>
         </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal overlay: choose which stretches to include -->
+  <div class="help-overlay" id="settingsOverlay" onclick="closeSettings()">
+    <div class="help-modal" onclick="event.stopPropagation()">
+      <div class="help-header">
+        <h2>Choose your stretches</h2>
+        <button class="help-close" onclick="closeSettings()" title="Close">&times;</button>
+      </div>
+      <div class="help-body">
+        <p>Pick the stretches for your routine. Changes take effect the next time you begin a session.</p>
+        <div class="settings-list" id="settingsList"></div>
+        <div class="settings-summary" id="settingsSummary"></div>
       </div>
     </div>
   </div>
