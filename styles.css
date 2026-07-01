@@ -23,6 +23,7 @@ body {
   background: var(--cream);
   color: var(--text-dark);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,7 +46,8 @@ body::before {
   z-index: 1;
   width: 100%;
   max-width: 480px;
-  min-height: 100vh;
+  height: 100vh;    /* fallback for browsers without dvh */
+  height: 100dvh;   /* excludes mobile browser UI, so the app never overflows */
   display: flex;
   flex-direction: column;
   padding: 0 20px 16px;
@@ -148,6 +150,7 @@ header p {
   flex-direction: column;
   align-items: center;
   flex: 1;
+  min-height: 0;   /* let the card shrink so the page fits without scrolling */
   position: relative;
   overflow: hidden;
 }
@@ -194,6 +197,8 @@ header p {
 
 .active-area {
   display: none;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   width: 100%;
@@ -213,9 +218,9 @@ header p {
 .pose-illustration {
   width: 100%;
   max-width: 300px;
-  height: 148px;
-  min-height: 148px;   /* never collapses */
-  flex-shrink: 0;      /* never squeezed by siblings */
+  height: 148px;       /* preferred size */
+  min-height: 64px;    /* shrinks on short screens instead of forcing a scroll */
+  flex-shrink: 1;
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -427,6 +432,7 @@ header p {
   width: 100%;
   max-width: 420px;
   max-height: 82vh;
+  max-height: 82dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
