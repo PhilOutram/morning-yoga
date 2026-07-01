@@ -151,6 +151,32 @@ if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 }
 
+/* ── Screen wake lock ───────────────────────────────────────── */
+// Keep the screen awake during a session so the phone doesn't sleep mid-routine.
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;      // unsupported (e.g. iOS < 16.4)
+  if (wakeLock && !wakeLock.released) return;  // already held
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) {}
+}
+
+async function releaseWakeLock() {
+  try { await wakeLock?.release(); } catch (e) {}
+  wakeLock = null;
+}
+
+// The OS releases the lock whenever the tab is hidden (screen off, app switch);
+// re-acquire it on return if a session is still running.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' &&
+      els.activeArea.classList.contains('visible')) {
+    acquireWakeLock();
+  }
+});
+
 /* ── Queue ───────────────────────────────────────────────────── */
 function buildQueue() {
   els.queue.innerHTML = STRETCHES.map((s, i) => `
@@ -306,6 +332,7 @@ function startSession() {
   buildQueue();
   showStretch(0, 0, true);
   startTicker();
+  acquireWakeLock();
 }
 
 function togglePause() {
@@ -347,6 +374,7 @@ function finishSession() {
   els.sessionLabel.textContent = 'Complete';
   els.sessionTime.textContent = '0:00';
   speak("Session complete. Well done. Have a wonderful day.");
+  releaseWakeLock();
 }
 
 function resetSession() {
@@ -376,6 +404,7 @@ function resetSession() {
   buildQueue();
   showStretch(0, 0, true);
   startTicker();
+  acquireWakeLock();
 }
 
 
@@ -394,6 +423,7 @@ function resetToStart() {
   els.completeScreen.classList.remove("visible");
   els.introScreen.classList.add("visible");
   els.queue.innerHTML = "";
+  releaseWakeLock();
 }
 
 function toggleVoice() {
