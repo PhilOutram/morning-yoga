@@ -287,6 +287,20 @@ function loadPose(url) {
   img.src = url;
 }
 
+// Warm the browser cache with every catalog pose image at startup, so the swap
+// at each transition is instant instead of waiting on a fresh network fetch.
+// Refs are kept in `poseCache` so the browser can't discard them before use.
+const poseCache = {};
+function preloadPoses() {
+  const urls = STRETCHES.flatMap(s => s.poses || [s.pose]).filter(Boolean);
+  urls.forEach(url => {
+    if (poseCache[url]) return;
+    const img = new Image();
+    img.src = url;
+    poseCache[url] = img;
+  });
+}
+
 /* ── Show stretch ────────────────────────────────────────────── */
 function showStretch(i, si, doAnnounce) {
   const s = SESSION[i];
@@ -574,4 +588,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initVersion();
   els.headerSub.textContent = routineLabel();
   els.sessionTime.textContent = fmtTime(sessionTotal);
+  preloadPoses();
 });
