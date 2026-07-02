@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <!-- Warm rounded tile so the mark reads on any tab colour -->
+  <rect width="36" height="36" rx="9" fill="#F7F3ED"/>
+  <!-- The header logo mark: a figure stretching inside a ring -->
+  <g transform="translate(1.8 1.8) scale(0.9)" fill="none">
+    <circle cx="18" cy="18" r="17" stroke="#C8894A" stroke-width="2" stroke-opacity=".45"/>
+    <ellipse cx="18" cy="12" rx="4" ry="4" fill="#C8894A" fill-opacity=".85"/>
+    <path d="M10 28 Q14 20 18 20 Q22 20 26 28" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+    <path d="M13 22 Q11 25 9 26" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+    <path d="M23 22 Q25 25 27 26" stroke="#6B5B4E" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
