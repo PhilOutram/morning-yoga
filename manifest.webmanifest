@@ -1,0 +1,20 @@
+{
+  "name": "Morning Stretch",
+  "short_name": "Stretch",
+  "description": "A timed 5-minute guided morning stretch routine with voice announcements, audio cues, and pose illustrations.",
+  "lang": "en-GB",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3ED",
+  "theme_color": "#F7F3ED",
+  "categories": ["health", "lifestyle", "fitness"],
+  "icons": [
+    { "src": "favicon.svg",  "sizes": "any",     "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png",      "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png",      "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png",      "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png",      "purpose": "maskable" }
+  ]
+}
